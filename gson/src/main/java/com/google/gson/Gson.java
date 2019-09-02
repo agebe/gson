@@ -110,6 +110,7 @@ public final class Gson {
   static final boolean DEFAULT_SERIALIZE_NULLS = false;
   static final boolean DEFAULT_COMPLEX_MAP_KEYS = false;
   static final boolean DEFAULT_SPECIALIZE_FLOAT_VALUES = false;
+  static final boolean DEFAULT_OBJECT_TYPE_ADAPTER_AFTER_USER_ADAPTERS = false;
 
   private static final TypeToken<?> NULL_KEY_SURROGATE = TypeToken.get(Object.class);
   private static final String JSON_NON_EXECUTABLE_PREFIX = ")]}'\n";
@@ -147,6 +148,7 @@ public final class Gson {
   final LongSerializationPolicy longSerializationPolicy;
   final List<TypeAdapterFactory> builderFactories;
   final List<TypeAdapterFactory> builderHierarchyFactories;
+  final boolean objectTypeAdapterAfterUserAdapters;
 
   /**
    * Constructs a Gson object with default configuration. The default configuration has the
@@ -189,7 +191,7 @@ public final class Gson {
         DEFAULT_PRETTY_PRINT, DEFAULT_LENIENT, DEFAULT_SPECIALIZE_FLOAT_VALUES,
         LongSerializationPolicy.DEFAULT, null, DateFormat.DEFAULT, DateFormat.DEFAULT,
         Collections.<TypeAdapterFactory>emptyList(), Collections.<TypeAdapterFactory>emptyList(),
-        Collections.<TypeAdapterFactory>emptyList());
+        Collections.<TypeAdapterFactory>emptyList(), DEFAULT_OBJECT_TYPE_ADAPTER_AFTER_USER_ADAPTERS);
   }
 
   Gson(Excluder excluder, FieldNamingStrategy fieldNamingStrategy,
@@ -199,7 +201,9 @@ public final class Gson {
       LongSerializationPolicy longSerializationPolicy, String datePattern, int dateStyle,
       int timeStyle, List<TypeAdapterFactory> builderFactories,
       List<TypeAdapterFactory> builderHierarchyFactories,
-      List<TypeAdapterFactory> factoriesToBeAdded) {
+      List<TypeAdapterFactory> factoriesToBeAdded,
+      boolean objectTypeAdapterAfterUserAdapters) {
+    this.objectTypeAdapterAfterUserAdapters = objectTypeAdapterAfterUserAdapters;
     this.excluder = excluder;
     this.fieldNamingStrategy = fieldNamingStrategy;
     this.instanceCreators = instanceCreators;
@@ -222,14 +226,18 @@ public final class Gson {
 
     // built-in type adapters that cannot be overridden
     factories.add(TypeAdapters.JSON_ELEMENT_FACTORY);
-    factories.add(ObjectTypeAdapter.FACTORY);
+    if(!objectTypeAdapterAfterUserAdapters) {
+        factories.add(ObjectTypeAdapter.FACTORY);
+    }
 
     // the excluder must precede all adapters that handle user-defined types
     factories.add(excluder);
 
     // users' type adapters
     factories.addAll(factoriesToBeAdded);
-
+    if(objectTypeAdapterAfterUserAdapters) {
+        factories.add(ObjectTypeAdapter.FACTORY);
+    }
     // type adapters for basic platform types
     factories.add(TypeAdapters.STRING_FACTORY);
     factories.add(TypeAdapters.INTEGER_FACTORY);

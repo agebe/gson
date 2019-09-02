@@ -40,6 +40,7 @@ import static com.google.gson.Gson.DEFAULT_LENIENT;
 import static com.google.gson.Gson.DEFAULT_PRETTY_PRINT;
 import static com.google.gson.Gson.DEFAULT_SERIALIZE_NULLS;
 import static com.google.gson.Gson.DEFAULT_SPECIALIZE_FLOAT_VALUES;
+import static com.google.gson.Gson.DEFAULT_OBJECT_TYPE_ADAPTER_AFTER_USER_ADAPTERS;
 
 /**
  * <p>Use this builder to construct a {@link Gson} instance when you need to set configuration
@@ -94,6 +95,7 @@ public final class GsonBuilder {
   private boolean prettyPrinting = DEFAULT_PRETTY_PRINT;
   private boolean generateNonExecutableJson = DEFAULT_JSON_NON_EXECUTABLE;
   private boolean lenient = DEFAULT_LENIENT;
+  private boolean objectTypeAdapterAfterUserAdapters = DEFAULT_OBJECT_TYPE_ADAPTER_AFTER_USER_ADAPTERS;
 
   /**
    * Creates a GsonBuilder instance that can be used to build Gson with various configuration
@@ -127,6 +129,7 @@ public final class GsonBuilder {
     this.timeStyle = gson.timeStyle;
     this.factories.addAll(gson.builderFactories);
     this.hierarchyFactories.addAll(gson.builderHierarchyFactories);
+    this.objectTypeAdapterAfterUserAdapters = gson.objectTypeAdapterAfterUserAdapters;
   }
 
   /**
@@ -578,6 +581,16 @@ public final class GsonBuilder {
   }
 
   /**
+   * Register the object type adapter after the users' type adapters to be able to override it.
+   * @return a reference to this {@code GsonBuilder} object to fulfill the "Builder" pattern
+   * @since SEI-Project extension
+   */
+  public GsonBuilder lateObjectTypeAdapter() {
+    this.objectTypeAdapterAfterUserAdapters = true;
+    return this;
+  }
+
+  /**
    * Creates a {@link Gson} instance based on the current configuration. This method is free of
    * side-effects to this {@code GsonBuilder} instance and hence can be called multiple times.
    *
@@ -599,7 +612,7 @@ public final class GsonBuilder {
         generateNonExecutableJson, escapeHtmlChars, prettyPrinting, lenient,
         serializeSpecialFloatingPointValues, longSerializationPolicy,
         datePattern, dateStyle, timeStyle,
-        this.factories, this.hierarchyFactories, factories);
+        this.factories, this.hierarchyFactories, factories, objectTypeAdapterAfterUserAdapters);
   }
 
   @SuppressWarnings("unchecked")
