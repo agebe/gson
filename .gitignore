@@ -16,5 +16,6 @@ classes
 .gradle
 local.properties
 build
+bin
 
 .DS_Store
